@@ -1,0 +1,35 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<h1>Добро пожаловать в Design.pro!</h1>
+<p>Студия дизайна интерьеров</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><h3>Помещений</h3></div>
+            <div class="panel-body"><h2>{{ num_rooms }}</h2></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><h3>Предложений</h3></div>
+            <div class="panel-body"><h2>{{ num_proposals }}</h2></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading"><h3>Дизайнеров</h3></div>
+            <div class="panel-body"><h2>{{ num_designers }}</h2></div>
+        </div>
+    </div>
+</div>
+
+<h2>Последние помещения</h2>
+<ul>
+    {% for room in recent_rooms %}
+    <li><a href="{{ room.get_absolute_url }}">{{ room.title }}</a> — {{ room.user.username }}</li>
+    {% empty %}
+    <p>Пока нет помещений.</p>
+    {% endfor %}
+</ul>
+{% endblock %}
