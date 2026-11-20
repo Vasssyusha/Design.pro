@@ -1,9 +1,15 @@
 {% extends "base_generic.html" %}
+
 {% block content %}
-<h1>Регистрация в Design.pro</h1>
+<h1>Регистрация</h1>
+
 <form method="post">
     {% csrf_token %}
-    <table>{{ form.as_table }}</table>
+    <table>
+        {{ form.as_table }}
+    </table>
     <input type="submit" value="Зарегистрироваться" class="btn btn-primary">
 </form>
+
+<p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
 {% endblock %}

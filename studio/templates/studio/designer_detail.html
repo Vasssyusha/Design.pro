@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>{{ designer.last_name }} {{ designer.first_name }}</h1>
+
+{% if designer.photo %}
+    <img src="{{ designer.photo.url }}" alt="Фото дизайнера" style="max-width: 300px;">
+{% endif %}
+
+<p><strong>Стаж работы:</strong> {{ designer.experience_years }} лет</p>
+<p><strong>Телефон:</strong> {{ designer.phone }}</p>
+
+{% if designer.bio %}
+    <h2>Биография</h2>
+    <p>{{ designer.bio }}</p>
+{% endif %}
+{% endblock %}

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Room, DesignProposal
+from .models import Room, DesignProposal, DesignStyle, Material, Designer
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -31,11 +31,12 @@ class RoomForm(forms.ModelForm):
 class DesignProposalForm(forms.ModelForm):
     class Meta:
         model = DesignProposal
-        fields = ['title', 'description', 'style', 'materials', 'preview_image']
+        fields = ['title', 'description', 'style', 'materials', 'preview_image', 'room_type']
         labels = {
             'title': 'Название варианта',
             'description': 'Описание варианта',
             'style': 'Стиль оформления',
             'materials': 'Материалы',
             'preview_image': 'Изображение варианта',
+            'room_type': 'Тип помещения',
         }

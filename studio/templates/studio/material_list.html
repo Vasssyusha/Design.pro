@@ -1,0 +1,53 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Все материалы</h1>
+
+{% if material_list %}
+<ul>
+    {% for material in material_list %}
+    <li>
+        {{ material.name }}
+        {% if perms.studio.can_make_proposal %}
+        | <a href="{% url 'material-update' material.id %}">Редактировать</a>
+        | <a href="{% url 'material-delete' material.id %}">Удалить</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Пагинация -->
+{% if is_paginated %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">← Назад</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд →</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p>Пока нет материалов.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Наши дизайнеры</h1>
+
+{% if designer_list %}
+<ul>
+    {% for designer in designer_list %}
+    <li>
+        <a href="{{ designer.get_absolute_url }}">{{ designer.last_name }} {{ designer.first_name }}</a>
+        — Стаж: {{ designer.experience_years }} лет, Тел: {{ designer.phone }}
+        {% if perms.studio.can_make_proposal %}
+        | <a href="{% url 'designer-update' designer.id %}">Редактировать</a>
+        | <a href="{% url 'designer-delete' designer.id %}">Удалить</a>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- Пагинация -->
+{% if is_paginated %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">← Назад</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд →</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p>Пока нет дизайнеров.</p>
+{% endif %}
+{% endblock %}

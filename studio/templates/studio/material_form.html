@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Добавить материал</h1>
+<form method="post">
+    {% csrf_token %}
+    <table>{{ form.as_table }}</table>
+    <input type="submit" value="Сохранить" class="btn btn-primary">
+</form>
+{% endblock %}

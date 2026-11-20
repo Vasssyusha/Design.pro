@@ -16,16 +16,19 @@
                     <li><a href="{% url 'index' %}">Главная</a></li>
                     {% if user.is_authenticated %}
                         <li><a href="{% url 'rooms' %}">Мои помещения</a></li>
+                        <li><a href="{% url 'designers' %}">Дизайнеры</a></li>
+                        <li><a href="{% url 'materials' %}">Материалы</a></li>
                         <li><a href="{% url 'room-create' %}">Добавить помещение</a></li>
                         <li><a href="{% url 'proposals' %}">Варианты оформления</a></li>
-                        {% if perms.portal.can_make_proposal %}
-                            <hr>
-                            <ul class="sidebar-nav">
-                                <li><strong>Персонал</strong></li>
-                                <li><a href="{% url 'all-rooms' %}">Все помещения</a></li>
-                                <li><a href="{% url 'proposal-create' %}">Создать предложение</a></li>
-                            </ul>
-                        {% endif %}
+                    {% if perms.studio.can_make_proposal %}
+                        <hr>
+                        <ul class="sidebar-nav">
+                            <li><strong>Персонал</strong></li>
+                            <li><a href="{% url 'all-rooms' %}">Просмотр заявок</a></li>
+                            <li><a href="{% url 'material-create' %}">Добавить материал</a></li>
+                            <li><a href="{% url 'designer-create' %}">Добавить дизайнера</a></li>
+                        </ul>
+                    {% endif %}
                         <hr>
                         <li>Пользователь: {{ user.username }}</li>
                         <li>

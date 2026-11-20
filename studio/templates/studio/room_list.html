@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+{% block content %}
+<h1>Мои помещения</h1>
+{% if room_list %}
+<ul>
+    {% for room in room_list %}
+    <li>
+        <a href="{{ room.get_absolute_url }}">{{ room.title }}</a>
+        ({{ room.get_room_type_display }}) — Статус: {{ room.get_status_display }}
+        | <a href="{% url 'room-update' room.id %}">Редактировать</a>
+        | <a href="{% url 'room-delete' room.id %}">Удалить</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>У вас пока нет помещений. <a href="{% url 'room-create' %}">Добавить первое!</a></p>
+{% endif %}
+{% endblock %}
