@@ -1,0 +1,53 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Все заявки</h1>
+
+{% if request_list %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Пользователь</th>
+            <th>Тип помещения</th>
+            <th>Статус</th>
+            <th>Дата</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in request_list %}
+        <tr>
+            <td>{{ req.user.username }}</td>
+            <td>{{ req.get_room_type_display }}</td>
+            <td>{{ req.get_status_display }}</td>
+            <td>{{ req.created_at|date:"d.m.Y" }}</td>
+            <td><a href="{% url 'request-detail' req.id %}">Просмотр</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li><a href="?page={{ page_obj.previous_page_number }}">← Назад</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="active"><span>{{ num }}</span></li>
+            {% else %}
+            <li><a href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li><a href="?page={{ page_obj.next_page_number }}">Вперёд →</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p>Пока нет заявок.</p>
+{% endif %}
+{% endblock %}

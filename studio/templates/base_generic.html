@@ -14,44 +14,62 @@
             <div class="col-sm-2">
                 <ul class="sidebar-nav">
                     <li><a href="{% url 'index' %}">Главная</a></li>
+
                     {% if user.is_authenticated %}
                         <li><a href="{% url 'rooms' %}">Мои помещения</a></li>
+                        <li><a href="{% url 'room-create' %}">Добавить помещение</a></li>
+
+                        <li><a href="{% url 'my-requests' %}">Мои заявки</a></li>
+                        <li><a href="{% url 'request-create' %}">Создать заявку</a></li>
+
+                        <li><a href="{% url 'proposals' %}">Варианты оформления</a></li>
                         <li><a href="{% url 'designers' %}">Дизайнеры</a></li>
                         <li><a href="{% url 'materials' %}">Материалы</a></li>
-                        <li><a href="{% url 'room-create' %}">Добавить помещение</a></li>
-                        <li><a href="{% url 'proposals' %}">Варианты оформления</a></li>
-                    {% if perms.studio.can_make_proposal %}
-                        <hr>
-                        <ul class="sidebar-nav">
+
+                        {% if perms.studio.can_make_proposal %}
+                            <hr>
                             <li><strong>Персонал</strong></li>
-                            <li><a href="{% url 'all-rooms' %}">Просмотр заявок</a></li>
+                            <li><a href="{% url 'all-requests' %}">Все заявки</a></li>
+                            <li><a href="{% url 'all-rooms' %}">Все помещения</a></li>
                             <li><a href="{% url 'material-create' %}">Добавить материал</a></li>
                             <li><a href="{% url 'designer-create' %}">Добавить дизайнера</a></li>
-                        </ul>
-                    {% endif %}
+                        {% endif %}
+
                         <hr>
-                        <li>Пользователь: {{ user.username }}</li>
+                        <li>Пользователь: <strong>{{ user.username }}</strong></li>
                         <li>
-                            <form method="post" action="{% url 'logout' %}?next={{ request.path }}" style="display:inline;">
+                            <form method="post" action="{% url 'logout' %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit" style="background:none; border:none; color:#337ab7; padding:0; text-decoration:underline; cursor:pointer;">Выйти</button>
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button type="submit" class="btn btn-link" style="padding: 0; text-decoration: underline;">Выйти</button>
                             </form>
                         </li>
                     {% else %}
+                        <hr>
                         <li><a href="{% url 'login' %}">Войти</a></li>
                         <li><a href="{% url 'register' %}">Регистрация</a></li>
                     {% endif %}
                 </ul>
             </div>
+
             <div class="col-sm-10">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 {% endif %}
+
                 {% block content %}{% endblock %}
             </div>
         </div>
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 </html>

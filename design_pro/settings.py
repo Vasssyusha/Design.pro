@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-h#fgabytj%n2@x#87f_9b(4g7(3@@mbsqzzrr(r&cvo_uhg0^t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -127,11 +127,13 @@ MAILERS = {
     },
 }
 
-# Куда перенаправлять после входа
 LOGIN_REDIRECT_URL = '/'
 
-# Куда перенаправлять после выхода
 LOGOUT_REDIRECT_URL = '/'
 
-# URL страницы входа (для @login_required)
 LOGIN_URL = '/accounts/login/'
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]

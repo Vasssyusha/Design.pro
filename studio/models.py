@@ -88,7 +88,6 @@ class Room(models.Model):
 
 
 class DesignProposal(models.Model):
-    """Предложение по оформлению помещения"""
     title = models.CharField(max_length=200, verbose_name="Название")
     description = models.TextField(verbose_name="Описание")
     style = models.ForeignKey(
@@ -159,30 +158,40 @@ class Designer(models.Model):
 
 
 class Request(models.Model):
-    """Заявка на оформление помещения"""
-    room = models.ForeignKey(
-        Room,
-        on_delete=models.CASCADE,
-        related_name='requests',
-        verbose_name="Помещение"
-    )
+    STATUS_CHOICES = [
+        ('new', 'Новая'),
+        ('in_progress', 'В работе'),
+        ('done', 'Завершена'),
+        ('rejected', 'Отклонена'),
+    ]
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь"
     )
-    message = models.TextField(verbose_name="Сообщение/пожелания")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
-    status = models.CharField(
+    room_type = models.CharField(
         max_length=20,
         choices=[
-            ('new', 'Новая'),
-            ('in_progress', 'В работе'),
-            ('done', 'Завершена'),
+            ('bedroom', 'Спальня'),
+            ('bathroom', 'Ванная'),
+            ('kitchen', 'Кухня'),
+            ('living_room', 'Гостиная'),
+            ('office', 'Офис'),
+            ('other', 'Другое'),
         ],
+        default='other',
+        verbose_name="Тип помещения"
+    )
+    message = models.TextField(verbose_name="Пожелания к дизайну")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
         default='new',
         verbose_name="Статус"
     )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     class Meta:
         ordering = ['-created_at']
@@ -190,4 +199,7 @@ class Request(models.Model):
         verbose_name_plural = "Заявки"
 
     def __str__(self):
-        return f"Заявка от {self.user.username} на {self.room.title}"
+        return f"Заявка от {self.user.username} на {self.get_room_type_display()}"
+
+    def get_absolute_url(self):
+        return reverse('request-detail', args=[str(self.id)])

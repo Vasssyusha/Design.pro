@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Заявка №{{ request.id }}</h1>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ request.get_room_type_display }}</h3>
+    </div>
+    <div class="panel-body">
+        <p><strong>Тип помещения:</strong> {{ request.get_room_type_display }}</p>
+        <p><strong>Статус:</strong> {{ request.get_status_display }}</p>
+        <p><strong>Дата создания:</strong> {{ request.created_at|date:"d.m.Y H:i" }}</p>
+        <p><strong>Дата обновления:</strong> {{ request.updated_at|date:"d.m.Y H:i" }}</p>
+
+        <hr>
+        <h4>Ваши пожелания:</h4>
+        <p>{{ request.message }}</p>
+    </div>
+</div>
+
+<p>
+    <a href="{% url 'my-requests' %}" class="btn btn-default">← К списку заявок</a>
+    <a href="{% url 'request-delete' request.id %}" class="btn btn-danger">Удалить заявку</a>
+</p>
+{% endblock %}

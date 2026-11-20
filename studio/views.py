@@ -8,11 +8,9 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Room, DesignProposal, DesignStyle, Material, Designer
-from .forms import RoomForm, DesignProposalForm, CustomUserCreationForm
+from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request
+from .forms import RoomForm, DesignProposalForm, CustomUserCreationForm, RequestForm
 
-
-# ==================== ГЛАВНАЯ СТРАНИЦА ====================
 
 def index(request):
     num_rooms = Room.objects.count()
@@ -33,8 +31,6 @@ def index(request):
     }
     return render(request, 'index.html', context)
 
-
-# ==================== КОМНАТЫ (ROOM) ====================
 
 class RoomListView(LoginRequiredMixin, generic.ListView):
     model = Room
@@ -78,8 +74,6 @@ class RoomDelete(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('rooms')
 
 
-# ==================== ПРЕДЛОЖЕНИЯ (PROPOSAL) ====================
-
 class ProposalListView(generic.ListView):
     model = DesignProposal
     template_name = 'studio/proposal_list.html'
@@ -120,16 +114,12 @@ class ProposalDelete(PermissionRequiredMixin, DeleteView):
     permission_required = 'studio.can_make_proposal'
 
 
-# ==================== ВСЕ КОМНАТЫ (для дизайнеров) ====================
-
 class AllRoomsListView(PermissionRequiredMixin, generic.ListView):
     model = Room
     template_name = 'studio/all_rooms_list.html'
     permission_required = 'studio.can_make_proposal'
     paginate_by = 2
 
-
-# ==================== МАТЕРИАЛЫ ====================
 
 class MaterialListView(generic.ListView):
     model = Material
@@ -160,7 +150,6 @@ class MaterialDelete(PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('materials')
 
 
-# ==================== ДИЗАЙНЕРЫ ====================
 
 class DesignerListView(generic.ListView):
     model = Designer
@@ -198,7 +187,60 @@ class DesignerDelete(PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('designers')
 
 
-# ==================== РЕГИСТРАЦИЯ ====================
+
+class RequestCreate(LoginRequiredMixin, CreateView):
+    model = Request
+    form_class = RequestForm
+    template_name = 'studio/request_form.html'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, 'Заявка успешно отправлена!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('my-requests')
+
+
+class RequestListView(LoginRequiredMixin, generic.ListView):
+    model = Request
+    template_name = 'studio/request_list.html'
+    context_object_name = 'request_list'
+    paginate_by = 2
+
+    def get_queryset(self):
+        return Request.objects.filter(user=self.request.user)
+
+
+class RequestDetailView(LoginRequiredMixin, generic.DetailView):
+    model = Request
+    template_name = 'studio/request_detail.html'
+    context_object_name = 'request'
+
+    def get_queryset(self):
+        return Request.objects.filter(user=self.request.user)
+
+
+class RequestDelete(LoginRequiredMixin, DeleteView):
+    model = Request
+    template_name = 'studio/request_confirm_delete.html'
+    success_url = reverse_lazy('my-requests')
+
+    def get_queryset(self):
+        return Request.objects.filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'Заявка удалена.')
+        return super().delete(request, *args, **kwargs)
+
+
+class AllRequestsListView(PermissionRequiredMixin, generic.ListView):
+    model = Request
+    template_name = 'studio/all_requests_list.html'
+    context_object_name = 'request_list'
+    permission_required = 'studio.can_make_proposal'
+    paginate_by = 5
+
 
 def register(request):
     if request.method == 'POST':

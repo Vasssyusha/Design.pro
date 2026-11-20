@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Room, DesignProposal, DesignStyle, Material, Designer
+from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -39,4 +39,20 @@ class DesignProposalForm(forms.ModelForm):
             'materials': 'Материалы',
             'preview_image': 'Изображение варианта',
             'room_type': 'Тип помещения',
+        }
+
+
+class RequestForm(forms.ModelForm):
+    class Meta:
+        model = Request
+        fields = ['room_type', 'message']
+        labels = {
+            'room_type': 'Тип помещения',
+            'message': 'Ваши пожелания к дизайну',
+        }
+        help_texts = {
+            'message': 'Опишите, как вы хотите оформить это помещение: стиль, цвета, материалы и т.д.',
+        }
+        widgets = {
+            'message': forms.Textarea(attrs={'rows': 5}),
         }

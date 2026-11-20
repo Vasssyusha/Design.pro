@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Удалить заявку</h1>
+
+<div class="alert alert-warning">
+    <p>Вы уверены, что хотите удалить заявку на <strong>{{ request.get_room_type_display }}</strong>?</p>
+    <p><em>{{ request.message|truncatewords:20 }}</em></p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="submit" value="Да, удалить" class="btn btn-danger">
+    <a href="{% url 'my-requests' %}" class="btn btn-default">Отмена</a>
+</form>
+{% endblock %}
