@@ -1,0 +1,81 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Личный кабинет</h1>
+
+<div class="panel">
+    <h3>Добро пожаловать, {{ user.username }}!</h3>
+    <p><strong>Email:</strong> {{ user.email|default:"Не указан" }}</p>
+    <p><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d.m.Y" }}</p>
+</div>
+
+<h2>Мои заявки ({{ user_requests|length }})</h2>
+
+{% if user_requests %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Тип помещения</th>
+            <th>Категория</th>
+            <th>Статус</th>
+            <th>Дата</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in user_requests %}
+        <tr>
+            <td>{{ req.get_room_type_display }}</td>
+            <td>{{ req.category|default:"—" }}</td>
+            <td>
+                {% if req.status == 'new' %}
+                    <span class="label label-info">Новая</span>
+                {% elif req.status == 'in_progress' %}
+                    <span class="label label-warning">Принято в работу</span>
+                {% elif req.status == 'done' %}
+                    <span class="label label-success">Выполнено</span>
+                {% elif req.status == 'rejected' %}
+                    <span class="label label-danger">Отклонена</span>
+                {% endif %}
+            </td>
+            <td>{{ req.created_at|date:"d.m.Y" }}</td>
+            <td>
+                <a href="{% url 'request-detail' req.id %}" class="btn btn-sm btn-default">Просмотр</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>У вас пока нет заявок. <a href="{% url 'request-create' %}">Создать первую!</a></p>
+{% endif %}
+
+<h2>Мои помещения ({{ user_rooms|length }})</h2>
+
+{% if user_rooms %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Тип</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for room in user_rooms %}
+        <tr>
+            <td><a href="{% url 'room-detail' room.id %}">{{ room.title }}</a></td>
+            <td>{{ room.get_room_type_display }}</td>
+            <td>{{ room.get_status_display }}</td>
+            <td>
+                <a href="{% url 'room-update' room.id %}" class="btn btn-sm btn-default">Редактировать</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>У вас пока нет помещений. <a href="{% url 'room-create' %}">Добавить первое!</a></p>
+{% endif %}
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request
+from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request, Category
 
 
 @admin.register(DesignStyle)
@@ -35,11 +35,18 @@ class DesignerAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'phone')
 
 
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+    search_fields = ('name',)
+
+
 @admin.register(Request)
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'room_type', 'status', 'created_at')
-    list_filter = ('status', 'room_type', 'created_at')
-    search_fields = ('user__username',)
+    list_display = ('user', 'category', 'room_type', 'status', 'created_at')
+    list_filter = ('status', 'category', 'room_type', 'created_at')
+    search_fields = ('user__username', 'message')
+    list_editable = ('status', 'category')
 
 
 class CustomUserAdmin(BaseUserAdmin):

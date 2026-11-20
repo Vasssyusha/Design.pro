@@ -157,11 +157,27 @@ class Designer(models.Model):
         return f"{self.last_name} {self.first_name}"
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Название категории")
+    description = models.TextField(blank=True, verbose_name="Описание")
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Категория заявки"
+        verbose_name_plural = "Категории заявок"
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('category-detail', args=[str(self.id)])
+
+
 class Request(models.Model):
     STATUS_CHOICES = [
         ('new', 'Новая'),
-        ('in_progress', 'В работе'),
-        ('done', 'Завершена'),
+        ('in_progress', 'Принято в работу'),
+        ('done', 'Выполнено'),
         ('rejected', 'Отклонена'),
     ]
 
@@ -169,6 +185,13 @@ class Request(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name="Пользователь"
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Категория"
     )
     room_type = models.CharField(
         max_length=20,
@@ -199,7 +222,8 @@ class Request(models.Model):
         verbose_name_plural = "Заявки"
 
     def __str__(self):
-        return f"Заявка от {self.user.username} на {self.get_room_type_display()}"
+        category_str = f" ({self.category})" if self.category else ""
+        return f"Заявка от {self.user.username} на {self.get_room_type_display()}{category_str}"
 
     def get_absolute_url(self):
         return reverse('request-detail', args=[str(self.id)])

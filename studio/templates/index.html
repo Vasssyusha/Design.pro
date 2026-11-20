@@ -1,23 +1,25 @@
 {% extends "base_generic.html" %}
+
 {% block content %}
 <h1>Добро пожаловать в Design.pro!</h1>
 <p>Студия дизайна интерьеров</p>
 
 <div class="row">
     <div class="col-md-4">
-        <div class="panel panel-primary">
+        <!-- Добавлен класс stats-card -->
+        <div class="panel panel-primary stats-card">
             <div class="panel-heading"><h3>Помещений</h3></div>
             <div class="panel-body"><h2>{{ num_rooms }}</h2></div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="panel panel-primary">
+        <div class="panel panel-primary stats-card">
             <div class="panel-heading"><h3>Дизайнеров</h3></div>
             <div class="panel-body"><h2>{{ num_designers }}</h2></div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="panel panel-primary">
+        <div class="panel panel-primary stats-card">
             <div class="panel-heading"><h3>Материалов</h3></div>
             <div class="panel-body"><h2>{{ num_materials }}</h2></div>
         </div>
@@ -29,7 +31,7 @@
     {% for room in recent_rooms %}
     <li><a href="{{ room.get_absolute_url }}">{{ room.title }}</a> — {{ room.user.username }}</li>
     {% empty %}
-    <p>Пока нет помещений.</p>
+    <li>Пока нет помещений.</li> <!-- Исправил <p> на <li> для валидности внутри <ul> -->
     {% endfor %}
 </ul>
 {% endblock %}

@@ -36,4 +36,17 @@ urlpatterns = [
     path('request/<int:pk>/', views.RequestDetailView.as_view(), name='request-detail'),
     path('request/<int:pk>/delete/', views.RequestDelete.as_view(), name='request-delete'),
     path('all-requests/', views.AllRequestsListView.as_view(), name='all-requests'),
+
+    path('categories/', views.CategoryListView.as_view(), name='categories'),
+    path('category/<int:pk>/', views.CategoryDetailView.as_view(), name='category-detail'),
+    path('category/create/', views.CategoryCreate.as_view(), name='category-create'),
+    path('category/<int:pk>/update/', views.CategoryUpdate.as_view(), name='category-update'),
+    path('category/<int:pk>/delete/', views.CategoryDelete.as_view(), name='category-delete'),
+
+    path('category/<int:pk>/delete/', views.CategoryDelete.as_view(), name='category-delete'),
+    path('request/<int:pk>/status/', views.RequestStatusUpdate.as_view(), name='request-status-update'),
+
+    path('accounts/login/', views.custom_login, name='login'),
+    path('user-cabinet/', views.user_cabinet, name='user-cabinet'),
+    path('admin-cabinet/', views.admin_cabinet, name='admin-cabinet'),
 ]

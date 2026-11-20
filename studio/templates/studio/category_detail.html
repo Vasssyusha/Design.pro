@@ -1,0 +1,43 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>{{ category.name }}</h1>
+
+{% if category.description %}
+<p>{{ category.description }}</p>
+{% endif %}
+
+<p><strong>Количество заявок:</strong> {{ category.request_set.count }}</p>
+
+{% if category.request_set.all %}
+<h2>Заявки в этой категории</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Пользователь</th>
+            <th>Тип помещения</th>
+            <th>Статус</th>
+            <th>Дата</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for req in category.request_set.all %}
+        <tr>
+            <td>{{ req.user.username }}</td>
+            <td>{{ req.get_room_type_display }}</td>
+            <td>{{ req.get_status_display }}</td>
+            <td>{{ req.created_at|date:"d.m.Y" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<p>
+    <a href="{% url 'categories' %}" class="btn btn-default">← К списку категорий</a>
+    {% if perms.studio.can_make_proposal %}
+    <a href="{% url 'category-update' category.id %}" class="btn btn-primary">Редактировать</a>
+    <a href="{% url 'category-delete' category.id %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+</p>
+{% endblock %}

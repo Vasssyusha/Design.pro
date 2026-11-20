@@ -1,15 +1,68 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth import login
+from django.contrib.auth import login as auth_login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 
-from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request
-from .forms import RoomForm, DesignProposalForm, CustomUserCreationForm, RequestForm
+from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request, Category
+from .forms import RoomForm, DesignProposalForm, CustomUserCreationForm, RequestForm, CategoryForm
+
+
+
+def custom_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            auth_login(request, user)
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+
+            if user.has_perm('studio.can_make_proposal'):
+                return redirect('admin-cabinet')
+            else:
+                return redirect('user-cabinet')
+        else:
+            messages.error(request, 'Неверный логин или пароль. Попробуйте ещё раз.')
+
+    return render(request, 'registration/login.html')
+
+
+@login_required
+def user_cabinet(request):
+    user_requests = Request.objects.filter(user=request.user).order_by('-created_at')
+    user_rooms = Room.objects.filter(user=request.user).order_by('-created_at')
+
+    context = {
+        'user_requests': user_requests,
+        'user_rooms': user_rooms,
+    }
+    return render(request, 'studio/user_cabinet.html', context)
+
+
+@login_required
+def admin_cabinet(request):
+    if not request.user.has_perm('studio.can_make_proposal'):
+        messages.error(request, 'У вас нет прав администратора')
+        return redirect('user-cabinet')
+
+    all_requests = Request.objects.all().order_by('-created_at')
+    all_rooms = Room.objects.all().order_by('-created_at')
+    all_users = User.objects.filter(is_active=True)
+
+    context = {
+        'all_requests': all_requests,
+        'all_rooms': all_rooms,
+        'all_users': all_users,
+    }
+    return render(request, 'studio/admin_cabinet.html', context)
 
 
 def index(request):
@@ -150,7 +203,6 @@ class MaterialDelete(PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('materials')
 
 
-
 class DesignerListView(generic.ListView):
     model = Designer
     template_name = 'studio/designer_list.html'
@@ -187,7 +239,6 @@ class DesignerDelete(PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('designers')
 
 
-
 class RequestCreate(LoginRequiredMixin, CreateView):
     model = Request
     form_class = RequestForm
@@ -215,7 +266,7 @@ class RequestListView(LoginRequiredMixin, generic.ListView):
 class RequestDetailView(LoginRequiredMixin, generic.DetailView):
     model = Request
     template_name = 'studio/request_detail.html'
-    context_object_name = 'request'
+    context_object_name = 'req'
 
     def get_queryset(self):
         return Request.objects.filter(user=self.request.user)
@@ -242,12 +293,63 @@ class AllRequestsListView(PermissionRequiredMixin, generic.ListView):
     paginate_by = 5
 
 
+class RequestStatusUpdate(PermissionRequiredMixin, UpdateView):
+    model = Request
+    template_name = 'studio/request_status_form.html'
+    context_object_name = 'req'
+    permission_required = 'studio.can_make_proposal'
+    fields = ['status', 'category']
+
+    def get_success_url(self):
+        return reverse('all-requests')
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Статус заявки изменён на "{form.instance.get_status_display()}"')
+        return super().form_valid(form)
+
+
+class CategoryListView(generic.ListView):
+    model = Category
+    template_name = 'studio/category_list.html'
+    context_object_name = 'category_list'
+    paginate_by = 5
+
+
+class CategoryDetailView(generic.DetailView):
+    model = Category
+    template_name = 'studio/category_detail.html'
+    context_object_name = 'category'
+
+
+class CategoryCreate(PermissionRequiredMixin, CreateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'studio/category_form.html'
+    permission_required = 'studio.can_make_proposal'
+    success_url = reverse_lazy('categories')
+
+
+class CategoryUpdate(PermissionRequiredMixin, UpdateView):
+    model = Category
+    form_class = CategoryForm
+    template_name = 'studio/category_form.html'
+    permission_required = 'studio.can_make_proposal'
+    success_url = reverse_lazy('categories')
+
+
+class CategoryDelete(PermissionRequiredMixin, DeleteView):
+    model = Category
+    template_name = 'studio/category_confirm_delete.html'
+    permission_required = 'studio.can_make_proposal'
+    success_url = reverse_lazy('categories')
+
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            auth_login(request, user)
             messages.success(request, 'Регистрация прошла успешно!')
             return HttpResponseRedirect(reverse('index'))
     else:

@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>{% if object %}Редактировать вариант оформления{% else %}Создать вариант оформления{% endif %}</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Сохранить" class="btn btn-primary">
+    <a href="{% url 'proposals' %}" class="btn btn-default">Отмена</a>
+</form>
+{% endblock %}

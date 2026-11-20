@@ -16,12 +16,16 @@
                     <li><a href="{% url 'index' %}">Главная</a></li>
 
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'rooms' %}">Мои помещения</a></li>
-                        <li><a href="{% url 'room-create' %}">Добавить помещение</a></li>
+                        {% if perms.studio.can_make_proposal %}
+                            <li><a href="{% url 'admin-cabinet' %}">Панель управления</a></li>
+                        {% else %}
+                            <li><a href="{% url 'user-cabinet' %}">Личный кабинет</a></li>
+                        {% endif %}
 
                         <li><a href="{% url 'my-requests' %}">Мои заявки</a></li>
                         <li><a href="{% url 'request-create' %}">Создать заявку</a></li>
-
+                        <li><a href="{% url 'rooms' %}">Мои помещения</a></li>
+                        <li><a href="{% url 'room-create' %}">Добавить помещение</a></li>
                         <li><a href="{% url 'proposals' %}">Варианты оформления</a></li>
                         <li><a href="{% url 'designers' %}">Дизайнеры</a></li>
                         <li><a href="{% url 'materials' %}">Материалы</a></li>
@@ -30,18 +34,19 @@
                             <hr>
                             <li><strong>Персонал</strong></li>
                             <li><a href="{% url 'all-requests' %}">Все заявки</a></li>
+                            <li><a href="{% url 'categories' %}">Категории заявок</a></li>
                             <li><a href="{% url 'all-rooms' %}">Все помещения</a></li>
                             <li><a href="{% url 'material-create' %}">Добавить материал</a></li>
                             <li><a href="{% url 'designer-create' %}">Добавить дизайнера</a></li>
                         {% endif %}
 
                         <hr>
-                        <li>Пользователь: <strong>{{ user.username }}</strong></li>
+                        <li class="user-info">Пользователь: <strong>{{ user.username }}</strong></li>
                         <li>
                             <form method="post" action="{% url 'logout' %}" style="display:inline;">
                                 {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.path }}">
-                                <button type="submit" class="btn btn-link" style="padding: 0; text-decoration: underline;">Выйти</button>
+                                <input type="hidden" name="next" value="/">
+                                <button type="submit" class="btn-link">Выйти</button>
                             </form>
                         </li>
                     {% else %}
@@ -68,8 +73,5 @@
             </div>
         </div>
     </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </body>
 </html>

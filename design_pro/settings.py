@@ -127,11 +127,11 @@ MAILERS = {
     },
 }
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'user-cabinet'
 
 LOGOUT_REDIRECT_URL = '/'
 
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = 'login'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',

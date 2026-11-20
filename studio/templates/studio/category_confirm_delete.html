@@ -1,0 +1,18 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Удалить категорию</h1>
+
+<div class="alert alert-warning">
+    <p>Вы уверены, что хотите удалить категорию <strong>{{ category.name }}</strong>?</p>
+    {% if category.request_set.count > 0 %}
+    <p class="text-danger">В этой категории {{ category.request_set.count }} заявок. Они останутся без категории.</p>
+    {% endif %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="submit" value="Да, удалить" class="btn btn-danger">
+    <a href="{% url 'categories' %}" class="btn btn-default">Отмена</a>
+</form>
+{% endblock %}

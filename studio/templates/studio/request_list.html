@@ -9,6 +9,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Категория</th>
             <th>Тип помещения</th>
             <th>Статус</th>
             <th>Дата создания</th>
@@ -18,14 +19,15 @@
     <tbody>
         {% for req in request_list %}
         <tr>
+            <td>{{ req.category|default:"—" }}</td>
             <td><a href="{{ req.get_absolute_url }}">{{ req.get_room_type_display }}</a></td>
             <td>
                 {% if req.status == 'new' %}
                     <span class="label label-info">Новая</span>
                 {% elif req.status == 'in_progress' %}
-                    <span class="label label-warning">В работе</span>
+                    <span class="label label-warning">Принято в работу</span>
                 {% elif req.status == 'done' %}
-                    <span class="label label-success">Завершена</span>
+                    <span class="label label-success">Выполнено</span>
                 {% elif req.status == 'rejected' %}
                     <span class="label label-danger">Отклонена</span>
                 {% endif %}

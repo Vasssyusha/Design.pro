@@ -1,0 +1,28 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Изменить статус заявки</h1>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <p><strong>Заявка №:</strong> {{ req.id }}</p>
+        <p><strong>От пользователя:</strong> {{ req.user.username }}</p>
+        <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
+        <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
+        <p><strong>Текущий статус:</strong> {{ req.get_status_display }}</p>
+        <hr>
+        <p><strong>Пожелания:</strong></p>
+        <p>{{ req.message }}</p>
+    </div>
+</div>
+
+<h3>Новые значения</h3>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Сохранить изменения" class="btn btn-primary">
+    <a href="{% url 'all-requests' %}" class="btn btn-default">Отмена</a>
+</form>
+{% endblock %}
