@@ -3,13 +3,116 @@
 {% block content %}
 <h1>Регистрация</h1>
 
-<form method="post">
-    {% csrf_token %}
-    <table>
-        {{ form.as_table }}
-    </table>
-    <input type="submit" value="Зарегистрироваться" class="btn btn-primary">
-</form>
+<div class="panel" style="max-width: 500px;">
+    <form method="post" novalidate>
+        {% csrf_token %}
 
-<p>Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a></p>
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-group {% if form.full_name.errors %}has-error{% endif %}">
+            <label for="id_full_name"><strong>ФИО *</strong></label>
+            <input type="text" name="full_name" id="id_full_name"
+                   value="{{ form.full_name.value|default:'' }}"
+                   placeholder="Иванов Иван Иванович"
+                   class="form-control {% if form.full_name.errors %}error-field{% endif %}"
+                   required>
+            {% if form.full_name.errors %}
+                <div class="error-message">
+                    {% for error in form.full_name.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+            <label for="id_username"><strong>Логин *</strong></label>
+            <input type="text" name="username" id="id_username"
+                   value="{{ form.username.value|default:'' }}"
+                   placeholder="ivanov-ivan"
+                   class="form-control {% if form.username.errors %}error-field{% endif %}"
+                   required>
+            {% if form.username.errors %}
+                <div class="error-message">
+                    {% for error in form.username.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.email.errors %}has-error{% endif %}">
+            <label for="id_email"><strong>Email *</strong></label>
+            <input type="email" name="email" id="id_email"
+                   value="{{ form.email.value|default:'' }}"
+                   placeholder="example@mail.com"
+                   class="form-control {% if form.email.errors %}error-field{% endif %}"
+                   required>
+            {% if form.email.errors %}
+                <div class="error-message">
+                    {% for error in form.email.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.password1.errors %}has-error{% endif %}">
+            <label for="id_password1"><strong>Пароль *</strong></label>
+            <input type="password" name="password1" id="id_password1"
+                   class="form-control {% if form.password1.errors %}error-field{% endif %}"
+                   required>
+            {% if form.password1.errors %}
+                <div class="error-message">
+                    {% for error in form.password1.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
+            <label for="id_password2"><strong>Повтор пароля *</strong></label>
+            <input type="password" name="password2" id="id_password2"
+                   class="form-control {% if form.password2.errors %}error-field{% endif %}"
+                   required>
+            {% if form.password2.errors %}
+                <div class="error-message">
+                    {% for error in form.password2.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="form-group {% if form.agreement.errors %}has-error{% endif %}">
+            <label class="checkbox-label">
+                <input type="checkbox" name="agreement"
+                       {% if form.agreement.value %}checked{% endif %}
+                       class="{% if form.agreement.errors %}error-field{% endif %}"
+                       required>
+                <strong>Я согласен на обработку персональных данных *</strong>
+            </label>
+            {% if form.agreement.errors %}
+                <div class="error-message">
+                    {% for error in form.agreement.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+    </form>
+
+    <p style="margin-top: 16px;">
+        Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+    </p>
+</div>
 {% endblock %}

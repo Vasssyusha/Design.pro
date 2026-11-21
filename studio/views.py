@@ -1,36 +1,46 @@
-from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth import login as auth_login, authenticate
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.contrib import messages
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request, Category
-from .forms import RoomForm, DesignProposalForm, CustomUserCreationForm, RequestForm, CategoryForm
-
+from .forms import (
+    CategoryForm,
+    CustomUserCreationForm,
+    DesignProposalForm,
+    RequestForm,
+    RequestStatusForm,
+    RoomForm,
+)
+from .models import (
+    Category,
+    DesignProposal,
+    Designer,
+    Material,
+    Profile,
+    Request,
+    Room,
+)
 
 
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             auth_login(request, user)
             messages.success(request, f'Добро пожаловать, {user.username}!')
-
             if user.has_perm('studio.can_make_proposal'):
                 return redirect('admin-cabinet')
-            else:
-                return redirect('user-cabinet')
-        else:
-            messages.error(request, 'Неверный логин или пароль. Попробуйте ещё раз.')
+            return redirect('user-cabinet')
+        messages.error(request, 'Неверный логин или пароль. Попробуйте ещё раз.')
 
     return render(request, 'registration/login.html')
 
@@ -39,7 +49,6 @@ def custom_login(request):
 def user_cabinet(request):
     user_requests = Request.objects.filter(user=request.user).order_by('-created_at')
     user_rooms = Room.objects.filter(user=request.user).order_by('-created_at')
-
     context = {
         'user_requests': user_requests,
         'user_rooms': user_rooms,
@@ -56,7 +65,6 @@ def admin_cabinet(request):
     all_requests = Request.objects.all().order_by('-created_at')
     all_rooms = Room.objects.all().order_by('-created_at')
     all_users = User.objects.filter(is_active=True)
-
     context = {
         'all_requests': all_requests,
         'all_rooms': all_rooms,
@@ -69,7 +77,8 @@ def index(request):
     num_rooms = Room.objects.count()
     num_designers = Designer.objects.count()
     num_materials = Material.objects.count()
-
+    num_in_progress = Request.objects.filter(status='in_progress').count()
+    completed_requests = Request.objects.filter(status='done').order_by('-created_at')[:4]
     recent_rooms = Room.objects.all()[:2]
     designers = Designer.objects.all()[:2]
     recent_materials = Material.objects.all()[:2]
@@ -78,6 +87,8 @@ def index(request):
         'num_rooms': num_rooms,
         'num_designers': num_designers,
         'num_materials': num_materials,
+        'num_in_progress': num_in_progress,
+        'completed_requests': completed_requests,
         'recent_rooms': recent_rooms,
         'designers': designers,
         'recent_materials': recent_materials,
@@ -260,7 +271,19 @@ class RequestListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 2
 
     def get_queryset(self):
-        return Request.objects.filter(user=self.request.user)
+        queryset = Request.objects.filter(user=self.request.user)
+        status = self.request.GET.get('status')
+        if status:
+            valid_statuses = [choice[0] for choice in Request.STATUS_CHOICES]
+            if status in valid_statuses:
+                queryset = queryset.filter(status=status)
+        return queryset.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_status'] = self.request.GET.get('status', '')
+        context['status_choices'] = Request.STATUS_CHOICES
+        return context
 
 
 class RequestDetailView(LoginRequiredMixin, generic.DetailView):
@@ -269,6 +292,8 @@ class RequestDetailView(LoginRequiredMixin, generic.DetailView):
     context_object_name = 'req'
 
     def get_queryset(self):
+        if self.request.user.has_perm('studio.can_make_proposal'):
+            return Request.objects.all()
         return Request.objects.filter(user=self.request.user)
 
 
@@ -280,8 +305,22 @@ class RequestDelete(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return Request.objects.filter(user=self.request.user)
 
+    def dispatch(self, request, *args, **kwargs):
+        request_obj = self.get_object()
+        if request_obj.user != request.user:
+            messages.error(request, 'Вы можете удалять только свои заявки.')
+            return redirect('my-requests')
+        if request_obj.status in ['in_progress', 'done']:
+            messages.error(
+                request,
+                f'Нельзя удалить заявку со статусом "{request_obj.get_status_display()}". '
+                'Обратитесь к администратору.'
+            )
+            return redirect('request-detail', pk=request_obj.id)
+        return super().dispatch(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Заявка удалена.')
+        messages.success(request, 'Заявка успешно удалена.')
         return super().delete(request, *args, **kwargs)
 
 
@@ -292,13 +331,33 @@ class AllRequestsListView(PermissionRequiredMixin, generic.ListView):
     permission_required = 'studio.can_make_proposal'
     paginate_by = 5
 
+    def get_queryset(self):
+        queryset = Request.objects.all()
+        status = self.request.GET.get('status')
+        if status:
+            valid_statuses = [choice[0] for choice in Request.STATUS_CHOICES]
+            if status in valid_statuses:
+                queryset = queryset.filter(status=status)
+        category = self.request.GET.get('category')
+        if category:
+            queryset = queryset.filter(category_id=category)
+        return queryset.order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['current_status'] = self.request.GET.get('status', '')
+        context['current_category'] = self.request.GET.get('category', '')
+        context['status_choices'] = Request.STATUS_CHOICES
+        context['categories'] = Category.objects.all()
+        return context
+
 
 class RequestStatusUpdate(PermissionRequiredMixin, UpdateView):
     model = Request
     template_name = 'studio/request_status_form.html'
     context_object_name = 'req'
     permission_required = 'studio.can_make_proposal'
-    fields = ['status', 'category']
+    form_class = RequestStatusForm
 
     def get_success_url(self):
         return reverse('all-requests')
@@ -306,6 +365,10 @@ class RequestStatusUpdate(PermissionRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, f'Статус заявки изменён на "{form.instance.get_status_display()}"')
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Проверьте правильность заполнения формы.')
+        return super().form_invalid(form)
 
 
 class CategoryListView(generic.ListView):
@@ -348,10 +411,19 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password1']
+            )
+            Profile.objects.create(
+                user=user,
+                full_name=form.cleaned_data['full_name'],
+                agreement=form.cleaned_data['agreement']
+            )
             auth_login(request, user)
             messages.success(request, 'Регистрация прошла успешно!')
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('user-cabinet'))
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})

@@ -30,7 +30,7 @@
                         <li><a href="{% url 'designers' %}">Дизайнеры</a></li>
                         <li><a href="{% url 'materials' %}">Материалы</a></li>
 
-                        {% if perms.studio.can_make_proposal %}
+                        {% if user.is_staff %}
                             <hr>
                             <li><strong>Персонал</strong></li>
                             <li><a href="{% url 'all-requests' %}">Все заявки</a></li>

@@ -5,10 +5,47 @@
 
 <p><a href="{% url 'request-create' %}" class="btn btn-success">+ Создать новую заявку</a></p>
 
+<div class="panel" style="padding: 16px; margin-bottom: 20px;">
+    <form method="get" action="{% url 'my-requests' %}" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <label for="status-filter"><strong>Фильтр по статусу:</strong></label>
+            <select name="status" id="status-filter" class="form-control">
+                <option value="">— Все статусы —</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Применить</button>
+            {% if current_status %}
+                <a href="{% url 'my-requests' %}" class="btn btn-default">Сбросить</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if current_status %}
+    <p style="margin-top: 12px; margin-bottom: 0;">
+        <strong>Текущий фильтр:</strong>
+        {% for value, label in status_choices %}
+            {% if current_status == value %}
+                <span class="label label-info">{{ label }}</span>
+            {% endif %}
+        {% endfor %}
+    </p>
+    {% endif %}
+</div>
+
 {% if request_list %}
+<p style="color: #6B6478;">Найдено заявок: {{ request_list|length }}</p>
+
 <table class="table">
     <thead>
         <tr>
+            <th>Фото</th>
+            <th>Название</th>
             <th>Категория</th>
             <th>Тип помещения</th>
             <th>Статус</th>
@@ -19,8 +56,16 @@
     <tbody>
         {% for req in request_list %}
         <tr>
+            <td>
+                {% if req.photo %}
+                    <img src="{{ req.photo.url }}" alt="Фото" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                {% else %}
+                    <span style="color: #999;">—</span>
+                {% endif %}
+            </td>
+            <td><a href="{{ req.get_absolute_url }}">{{ req.title }}</a></td>
             <td>{{ req.category|default:"—" }}</td>
-            <td><a href="{{ req.get_absolute_url }}">{{ req.get_room_type_display }}</a></td>
+            <td>{{ req.get_room_type_display }}</td>
             <td>
                 {% if req.status == 'new' %}
                     <span class="label label-info">Новая</span>
@@ -34,8 +79,12 @@
             </td>
             <td>{{ req.created_at|date:"d.m.Y H:i" }}</td>
             <td>
-                <a href="{{ req.get_absolute_url }}" class="btn btn-sm btn-default">Просмотр</a>
-                <a href="{% url 'request-delete' req.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                <a href="{% url 'request-detail' req.id %}" class="btn btn-sm btn-default">Просмотр</a>
+                {% if req.status == 'new' or req.status == 'rejected' %}
+                    <a href="{% url 'request-delete' req.id %}" class="btn btn-sm btn-danger">Удалить</a>
+                {% else %}
+                    <span class="label label-default" title="Удаление недоступно для статуса '{{ req.get_status_display }}'">Х</span>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
@@ -46,23 +95,30 @@
 <nav>
     <ul class="pagination">
         {% if page_obj.has_previous %}
-        <li><a href="?page={{ page_obj.previous_page_number }}">← Назад</a></li>
+        <li><a href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}">← Назад</a></li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
             <li class="active"><span>{{ num }}</span></li>
             {% else %}
-            <li><a href="?page={{ num }}">{{ num }}</a></li>
+            <li><a href="?page={{ num }}&status={{ current_status }}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
-        <li><a href="?page={{ page_obj.next_page_number }}">Вперёд →</a></li>
+        <li><a href="?page={{ page_obj.next_page_number }}&status={{ current_status }}">Вперёд →</a></li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
 
 {% else %}
-<p>У вас пока нет заявок. <a href="{% url 'request-create' %}">Создать первую!</a></p>
+<div class="alert alert-info">
+    {% if current_status %}
+        <p>Заявок с выбранным статусом не найдено.</p>
+        <a href="{% url 'my-requests' %}" class="btn btn-default">Сбросить фильтр</a>
+    {% else %}
+        <p>У вас пока нет заявок. <a href="{% url 'request-create' %}">Создать первую!</a></p>
+    {% endif %}
+</div>
 {% endif %}
 {% endblock %}

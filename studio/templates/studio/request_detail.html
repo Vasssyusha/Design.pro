@@ -3,25 +3,40 @@
 {% block content %}
 <h1>Заявка №{{ req.id }}</h1>
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">{{ req.get_room_type_display }}</h3>
-    </div>
-    <div class="panel-body">
-        <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
-        <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
-        <p><strong>Статус:</strong> {{ req.get_status_display }}</p>
-        <p><strong>Дата создания:</strong> {{ req.created_at|date:"d.m.Y H:i" }}</p>
-        <p><strong>Дата обновления:</strong> {{ req.updated_at|date:"d.m.Y H:i" }}</p>
+<div class="panel">
+    <p><strong>Название:</strong> {{ req.title }}</p>
+    <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
+    <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
+    <p><strong>Статус:</strong> {{ req.get_status_display }}</p>
+    <p><strong>Дата создания:</strong> {{ req.created_at|date:"d.m.Y H:i" }}</p>
+    <p><strong>Дата обновления:</strong> {{ req.updated_at|date:"d.m.Y H:i" }}</p>
 
-        <hr>
-        <h4>Ваши пожелания:</h4>
-        <p>{{ req.message }}</p>
-    </div>
+    <hr>
+    <h4>Описание:</h4>
+    <p>{{ req.message }}</p>
+
+    {% if req.photo %}
+    <hr>
+    <h4>Фото помещения:</h4>
+    <img src="{{ req.photo.url }}" alt="Фото помещения" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+    {% endif %}
+
+    {% if req.design_image %}
+    <hr>
+    <h4>Готовый дизайн:</h4>
+    <img src="{{ req.design_image.url }}" alt="Готовый дизайн" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+    {% endif %}
 </div>
 
 <p>
-    <a href="{% url 'my-requests' %}" class="btn btn-default">← К списку заявок</a>
-    <a href="{% url 'request-delete' req.id %}" class="btn btn-danger">Удалить заявку</a>
+    {% if perms.studio.can_make_proposal %}
+        <a href="{% url 'all-requests' %}" class="btn btn-default">← К списку всех заявок</a>
+    {% else %}
+        <a href="{% url 'my-requests' %}" class="btn btn-default">← К моим заявкам</a>
+    {% endif %}
+
+    {% if req.user == user and req.status != 'in_progress' and req.status != 'done' %}
+        <a href="{% url 'request-delete' req.id %}" class="btn btn-danger">Удалить заявку</a>
+    {% endif %}
 </p>
 {% endblock %}

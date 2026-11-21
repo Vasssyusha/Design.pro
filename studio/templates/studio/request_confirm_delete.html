@@ -1,16 +1,40 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<h1>Удалить заявку</h1>
+<h1>Удаление заявки</h1>
 
-<div class="alert alert-warning">
-    <p>Вы уверены, что хотите удалить заявку на <strong>{{ request.get_room_type_display }}</strong>?</p>
-    <p><em>{{ request.message|truncatewords:20 }}</em></p>
+<div class="panel" style="max-width: 600px;">
+    <div class="alert alert-warning">
+        <strong>Внимание!</strong> Вы собираетесь удалить заявку. Это действие нельзя отменить.
+    </div>
+
+    <h3>Заявка №{{ req.id }}</h3>
+    <p><strong>Название:</strong> {{ req.title }}</p>
+    <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
+    <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
+    <p><strong>Статус:</strong> {{ req.get_status_display }}</p>
+    <p><strong>Дата создания:</strong> {{ req.created_at|date:"d.m.Y H:i" }}</p>
+
+    <hr>
+
+    <p style="font-size: 16px; font-weight: 600;">
+        Вы действительно хотите удалить эту заявку?
+    </p>
+
+    <form method="post" id="delete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" onclick="return confirmDelete();">
+            Да, удалить заявку
+        </button>
+        <a href="{% url 'request-detail' req.id %}" class="btn btn-default">
+            Отмена
+        </a>
+    </form>
 </div>
 
-<form method="post">
-    {% csrf_token %}
-    <input type="submit" value="Да, удалить" class="btn btn-danger">
-    <a href="{% url 'my-requests' %}" class="btn btn-default">Отмена</a>
-</form>
+<script>
+function confirmDelete() {
+    return confirm('Вы уверены, что хотите удалить заявку №{{ req.id }}?\n\nЭто действие нельзя отменить.');
+}
+</script>
 {% endblock %}

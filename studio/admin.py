@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
-from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request, Category
+from .models import Room, DesignProposal, DesignStyle, Material, Designer, Request, Category, Profile
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'agreement')
+    search_fields = ('user__username', 'full_name')
 
 
 @admin.register(DesignStyle)

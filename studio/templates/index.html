@@ -6,7 +6,6 @@
 
 <div class="row">
     <div class="col-md-4">
-        <!-- Добавлен класс stats-card -->
         <div class="panel panel-primary stats-card">
             <div class="panel-heading"><h3>Помещений</h3></div>
             <div class="panel-body"><h2>{{ num_rooms }}</h2></div>
@@ -26,12 +25,56 @@
     </div>
 </div>
 
+<div class="row" style="margin-top: 20px;">
+    <div class="col-md-4">
+        <div class="panel panel-primary stats-card">
+            <div class="panel-heading"><h3>В работе</h3></div>
+            <div class="panel-body"><h2>{{ num_in_progress }}</h2></div>
+        </div>
+    </div>
+</div>
+
 <h2>Последние помещения</h2>
 <ul>
     {% for room in recent_rooms %}
     <li><a href="{{ room.get_absolute_url }}">{{ room.title }}</a> — {{ room.user.username }}</li>
     {% empty %}
-    <li>Пока нет помещений.</li> <!-- Исправил <p> на <li> для валидности внутри <ul> -->
+    <li>Пока нет помещений.</li>
     {% endfor %}
 </ul>
+
+<h2>Выполненные заявки</h2>
+
+{% if completed_requests %}
+<div class="row">
+    {% for req in completed_requests %}
+    <div class="col-md-4">
+        <div class="panel panel-with-image">
+            {% if req.design_image %}
+                <img src="{{ req.design_image.url }}" alt="{{ req.title|default:'Заявка' }}">
+            {% elif req.photo %}
+                <img src="{{ req.photo.url }}" alt="{{ req.title|default:'Заявка' }}">
+            {% else %}
+                <div style="height: 220px; background: #FAF8FC; display: flex; align-items: center; justify-content: center; color: #6B6478;">
+                    Нет изображения
+                </div>
+            {% endif %}
+
+            {% if req.title %}
+                <h3>{{ req.title }}</h3>
+            {% else %}
+                <h3>Заявка №{{ req.id }}</h3>
+            {% endif %}
+
+            <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
+            <p><small style="color: #6B6478;">Выполнено: {{ req.updated_at|date:"d.m.Y H:i" }}</small></p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    <p>Пока нет выполненных заявок.</p>
+</div>
+{% endif %}
 {% endblock %}

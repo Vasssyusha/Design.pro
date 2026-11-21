@@ -3,10 +3,66 @@
 {% block content %}
 <h1>Все заявки</h1>
 
+<div class="panel" style="padding: 16px; margin-bottom: 20px;">
+    <form method="get" action="{% url 'all-requests' %}" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 180px;">
+            <label for="status-filter"><strong>Статус:</strong></label>
+            <select name="status" id="status-filter" class="form-control">
+                <option value="">— Все статусы —</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label for="category-filter"><strong>Категория:</strong></label>
+            <select name="category" id="category-filter" class="form-control">
+                <option value="">— Все категории —</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"d" %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Применить</button>
+            {% if current_status or current_category %}
+                <a href="{% url 'all-requests' %}" class="btn btn-default">Сбросить</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if current_status or current_category %}
+    <p style="margin-top: 12px; margin-bottom: 0;">
+        <strong>Активные фильтры:</strong>
+        {% if current_status %}
+            {% for value, label in status_choices %}
+                {% if current_status == value %}
+                    <span class="label label-info">{{ label }}</span>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if current_category %}
+            {% for cat in categories %}
+                {% if current_category == cat.id|stringformat:"d" %}
+                    <span class="label label-warning">{{ cat.name }}</span>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+
 {% if request_list %}
+<p style="color: var(--text-muted);">Найдено заявок: {{ request_list|length }}</p>
+
 <table class="table">
     <thead>
         <tr>
+            <th>Фото</th>
             <th>Пользователь</th>
             <th>Категория</th>
             <th>Тип помещения</th>
@@ -18,6 +74,13 @@
     <tbody>
         {% for req in request_list %}
         <tr>
+            <td>
+                {% if req.photo %}
+                    <img src="{{ req.photo.url }}" alt="Фото" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                {% else %}
+                    <span style="color: #999;">—</span>
+                {% endif %}
+            </td>
             <td>{{ req.user.username }}</td>
             <td>{{ req.category|default:"—" }}</td>
             <td>{{ req.get_room_type_display }}</td>
@@ -46,23 +109,30 @@
 <nav>
     <ul class="pagination">
         {% if page_obj.has_previous %}
-        <li><a href="?page={{ page_obj.previous_page_number }}">← Назад</a></li>
+        <li><a href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}&category={{ current_category }}">← Назад</a></li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
             {% if page_obj.number == num %}
             <li class="active"><span>{{ num }}</span></li>
             {% else %}
-            <li><a href="?page={{ num }}">{{ num }}</a></li>
+            <li><a href="?page={{ num }}&status={{ current_status }}&category={{ current_category }}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
-        <li><a href="?page={{ page_obj.next_page_number }}">Вперёд →</a></li>
+        <li><a href="?page={{ page_obj.next_page_number }}&status={{ current_status }}&category={{ current_category }}">Вперёд →</a></li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
 
 {% else %}
-<p>Пока нет заявок.</p>
+<div class="alert alert-info">
+    {% if current_status or current_category %}
+        <p>Заявок по выбранным фильтрам не найдено.</p>
+        <a href="{% url 'all-requests' %}" class="btn btn-default">Сбросить фильтры</a>
+    {% else %}
+        <p>Пока нет заявок.</p>
+    {% endif %}
+</div>
 {% endif %}
 {% endblock %}

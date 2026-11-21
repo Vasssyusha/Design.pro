@@ -3,26 +3,77 @@
 {% block content %}
 <h1>Изменить статус заявки</h1>
 
-<div class="panel panel-default">
-    <div class="panel-body">
-        <p><strong>Заявка №:</strong> {{ req.id }}</p>
-        <p><strong>От пользователя:</strong> {{ req.user.username }}</p>
-        <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
-        <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
-        <p><strong>Текущий статус:</strong> {{ req.get_status_display }}</p>
-        <hr>
-        <p><strong>Пожелания:</strong></p>
-        <p>{{ req.message }}</p>
-    </div>
+<div class="panel" style="max-width: 650px;">
+    <p><strong>Заявка №:</strong> {{ req.id }}</p>
+    <p><strong>Название:</strong> {{ req.title }}</p>
+    <p><strong>От пользователя:</strong> {{ req.user.username }}</p>
+    <p><strong>Тип помещения:</strong> {{ req.get_room_type_display }}</p>
+    <p><strong>Категория:</strong> {{ req.category|default:"Не указана" }}</p>
+    <p><strong>Текущий статус:</strong> {{ req.get_status_display }}</p>
+    <hr>
+    <p><strong>Описание:</strong></p>
+    <p>{{ req.message }}</p>
+    {% if req.photo %}
+    <hr>
+    <p><strong>Фото помещения:</strong></p>
+    <img src="{{ req.photo.url }}" alt="Фото помещения" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+    {% endif %}
+    {% if req.design_image %}
+    <hr>
+    <p><strong>Текущее изображение дизайна:</strong></p>
+    <img src="{{ req.design_image.url }}" alt="Дизайн" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+    {% endif %}
 </div>
 
 <h3>Новые значения</h3>
-<form method="post">
-    {% csrf_token %}
-    <table>
-        {{ form.as_table }}
-    </table>
-    <input type="submit" value="Сохранить изменения" class="btn btn-primary">
-    <a href="{% url 'all-requests' %}" class="btn btn-default">Отмена</a>
-</form>
+<div class="panel" style="max-width: 650px;">
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <table style="width: 100%; border-collapse: collapse;">
+            {% for field in form %}
+            <tr>
+                <td style="padding: 10px 16px 10px 0; vertical-align: top; width: 35%;">
+                    <label for="{{ field.id_for_label }}" style="font-weight: 600;">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span style="color: #E05A4E;">*</span>
+                        {% endif %}
+                    </label>
+                </td>
+                <td style="padding: 10px 0;">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div style="font-size: 13px; color: #6B6478; margin-top: 4px;">
+                            {{ field.help_text }}
+                        </div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div style="margin-top: 8px;">
+                            {% for error in field.errors %}
+                                <p style="color: #E05A4E; font-size: 13px; margin: 4px 0; padding: 6px 10px; background: #fff5f5; border-left: 3px solid #E05A4E; border-radius: 4px;">
+                                    {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <a href="{% url 'all-requests' %}" class="btn btn-default">Отмена</a>
+        </div>
+    </form>
+</div>
 {% endblock %}
