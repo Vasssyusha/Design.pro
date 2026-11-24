@@ -36,7 +36,7 @@ class CustomUserCreationForm(forms.Form):
     username = forms.CharField(
         max_length=150,
         label="Логин",
-        widget=forms.TextInput(attrs={'placeholder': 'ivanov-ivan'}),
+        widget=forms.TextInput(attrs={'placeholder': 'andreev-andrey'}),
     )
     email = forms.EmailField(
         label="Email",
