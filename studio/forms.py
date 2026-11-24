@@ -213,9 +213,14 @@ class RequestStatusForm(forms.ModelForm):
         comment = (cleaned_data.get('designer_comment') or '').strip()
         old = self.original_status
 
-        allowed = {'new': 'in_progress', 'in_progress': 'done'}
-        if old in allowed and status != old and status != allowed[old]:
+        allowed = {
+            'new': ['in_progress', 'rejected'],
+            'in_progress': ['done'],
+        }
+
+        if old in allowed and status != old and status not in allowed[old]:
             self.add_error('status', 'Недопустимый переход статуса.')
+
         if old in ('done', 'rejected') and status != old:
             self.add_error('status', 'Смена статуса невозможна.')
 
@@ -234,7 +239,6 @@ class RequestStatusForm(forms.ModelForm):
             validate_image(design_image, "изображение готового дизайна")
 
         return cleaned_data
-
 
 class CategoryForm(forms.ModelForm):
     class Meta:
