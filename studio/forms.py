@@ -31,7 +31,7 @@ class CustomUserCreationForm(forms.Form):
     full_name = forms.CharField(
         max_length=200,
         label="ФИО",
-        widget=forms.TextInput(attrs={'placeholder': 'Иванов Иван Иванович'}),
+        widget=forms.TextInput(attrs={'placeholder': 'Андреев Андрей Андреевич'}),
     )
     username = forms.CharField(
         max_length=150,
