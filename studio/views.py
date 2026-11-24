@@ -9,23 +9,8 @@ from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .forms import (
-    CategoryForm,
-    CustomUserCreationForm,
-    DesignProposalForm,
-    RequestForm,
-    RequestStatusForm,
-    RoomForm,
-)
-from .models import (
-    Category,
-    DesignProposal,
-    Designer,
-    Material,
-    Profile,
-    Request,
-    Room,
-)
+from .forms import (CategoryForm, CustomUserCreationForm, DesignProposalForm, RequestForm, RequestStatusForm, RoomForm,)
+from .models import (Category, DesignProposal, Designer, Material, Profile, Request, Room,)
 
 
 def custom_login(request):
@@ -359,6 +344,18 @@ class RequestStatusUpdate(PermissionRequiredMixin, UpdateView):
     permission_required = 'studio.can_make_proposal'
     form_class = RequestStatusForm
 
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status in ('done', 'rejected'):
+            messages.error(request, 'Смена статуса для этой заявки невозможна.')
+            return redirect('all-requests')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['original_status'] = self.object.status
+        return kwargs
+
     def get_success_url(self):
         return reverse('all-requests')
 
@@ -369,7 +366,6 @@ class RequestStatusUpdate(PermissionRequiredMixin, UpdateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Проверьте правильность заполнения формы.')
         return super().form_invalid(form)
-
 
 class CategoryListView(generic.ListView):
     model = Category

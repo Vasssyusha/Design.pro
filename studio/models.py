@@ -182,6 +182,13 @@ class Request(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
+    designer_comment = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Комментарий дизайнера",
+        help_text="Опишите, что было сделано или какие есть нюансы"
+    )
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Заявка"
@@ -193,3 +200,5 @@ class Request(models.Model):
 
     def get_absolute_url(self):
         return reverse('request-detail', args=[str(self.id)])
+
+

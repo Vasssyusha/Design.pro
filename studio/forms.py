@@ -187,24 +187,50 @@ class RequestForm(forms.ModelForm):
 class RequestStatusForm(forms.ModelForm):
     class Meta:
         model = Request
-        fields = ['status', 'category', 'design_image']
+        fields = ['status', 'category', 'design_image', 'designer_comment']
         labels = {
             'status': 'Статус',
             'category': 'Категория',
             'design_image': 'Изображение готового дизайна',
+            'designer_comment': 'Комментарий дизайнера',
         }
         help_texts = {
             'design_image': 'Обязательно при статусе «Выполнено». Форматы: jpg, jpeg, png, bmp. Макс. 2 МБ.',
+            'designer_comment': 'Обязателен при переводе заявки из «Новая» в «Принято в работу».',
         }
+        widgets = {
+            'designer_comment': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Например: Принимаю заявку в работу, уточню детали по телефону...',}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.original_status = kwargs.pop('original_status', None)
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
         status = cleaned_data.get('status')
         design_image = cleaned_data.get('design_image')
+        comment = (cleaned_data.get('designer_comment') or '').strip()
+        old = self.original_status
 
-        if status == 'done':
-            if not design_image:
-                raise ValidationError("При статусе «Выполнено» необходимо прикрепить изображение готового дизайна.")
+        allowed = {'new': 'in_progress', 'in_progress': 'done'}
+        if old in allowed and status != old and status != allowed[old]:
+            self.add_error('status', 'Недопустимый переход статуса.')
+        if old in ('done', 'rejected') and status != old:
+            self.add_error('status', 'Смена статуса невозможна.')
+
+        if old == 'new' and status == 'in_progress' and not comment:
+            self.add_error(
+                'designer_comment',
+                'При переводе заявки в статус «Принято в работу» необходимо указать комментарий.'
+            )
+
+        if status == 'done' and not design_image and not self.instance.design_image:
+            self.add_error(
+                'design_image',
+                'При статусе «Выполнено» необходимо прикрепить изображение готового дизайна.'
+            )
+        elif design_image:
             validate_image(design_image, "изображение готового дизайна")
 
         return cleaned_data

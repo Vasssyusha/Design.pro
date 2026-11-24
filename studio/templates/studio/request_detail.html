@@ -26,6 +26,14 @@
     <h4>Готовый дизайн:</h4>
     <img src="{{ req.design_image.url }}" alt="Готовый дизайн" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
     {% endif %}
+
+    {% if req.designer_comment %}
+    <hr>
+    <div style="background-color: #f0f8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-top: 20px;">
+        <strong>Комментарий от дизайнера:</strong>
+        <p style="margin-top: 8px; white-space: pre-line;">{{ req.designer_comment }}</p>
+    </div>
+    {% endif %}
 </div>
 
 <p>
