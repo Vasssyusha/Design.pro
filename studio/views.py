@@ -286,6 +286,7 @@ class RequestDelete(LoginRequiredMixin, DeleteView):
     model = Request
     template_name = 'studio/request_confirm_delete.html'
     success_url = reverse_lazy('my-requests')
+    context_object_name = 'req'
 
     def get_queryset(self):
         return Request.objects.filter(user=self.request.user)
